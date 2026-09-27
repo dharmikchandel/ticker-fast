@@ -11,6 +11,9 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
+# Locate operating system thread support library (pthread on Linux).
+find_package(Threads REQUIRED)
+
 # Default to Release build type if none was specified on the command line.
 # Low-latency engines rely heavily on compiler optimizations (e.g. -O3).
 if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
@@ -21,6 +24,11 @@ endif()
 
 # Generate compile_commands.json, which LSP tools (like clangd) use to index the codebase.
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
+# Sanitizer configuration: TICKER_FAST_SANITIZER cache string variable.
+# 'address' (ASan) and 'undefined' (UBSan) are reserved for Phase 11 hardening
+# and are not implemented yet.
+set(TICKER_FAST_SANITIZER "" CACHE STRING "Sanitizer to enable: 'thread', or empty (disabled).")
 
 # Define an INTERFACE library for compiler warning flags.
 # Using an INTERFACE target allows our targets to opt in without imposing these
@@ -33,6 +41,19 @@ target_compile_options(ticker_fast_warnings INTERFACE
     -Wshadow
     -Wconversion
 )
+
+# Apply ThreadSanitizer flags only to our own targets when requested.
+if(TICKER_FAST_SANITIZER STREQUAL "thread")
+    message(STATUS "Enabling ThreadSanitizer for project targets (-fsanitize=thread -g -O1)")
+    target_compile_options(ticker_fast_warnings INTERFACE
+        -fsanitize=thread
+        -g
+        -O1
+    )
+    target_link_options(ticker_fast_warnings INTERFACE
+        -fsanitize=thread
+    )
+endif()
 
 # Define the core library as an INTERFACE target (header-only for now).
 # It will transition to a compiled library in Phase 5 when shared memory logic is added.

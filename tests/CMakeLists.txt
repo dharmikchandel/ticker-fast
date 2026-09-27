@@ -26,3 +26,17 @@ target_link_libraries(test_ring_buffer PRIVATE
 
 # Automatically discover individual GoogleTest test cases and register them with CTest
 gtest_discover_tests(test_ring_buffer)
+
+# Build the test_ring_stress test executable from test_ring_stress.cpp
+add_executable(test_ring_stress test_ring_stress.cpp)
+
+# Link the core headers, strict compiler warning flags, Threads, and GoogleTest main runner
+target_link_libraries(test_ring_stress PRIVATE
+    ticker_fast_core
+    ticker_fast_warnings
+    Threads::Threads
+    GTest::gtest_main
+)
+
+# Automatically discover individual GoogleTest test cases and register them with CTest
+gtest_discover_tests(test_ring_stress)
