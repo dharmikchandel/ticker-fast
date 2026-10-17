@@ -79,3 +79,12 @@ FetchContent_MakeAvailable(googletest)
 # Enable CTest infrastructure and recurse into the tests directory.
 enable_testing()
 add_subdirectory(tests)
+
+# Throughput benchmark for the Phase 4 ring buffer toggles.
+# Only Release numbers mean anything; Debug builds it too, just to catch compile errors.
+add_executable(mechanical_sympathy_bench benchmarks/mechanical_sympathy_bench.cpp)
+target_link_libraries(mechanical_sympathy_bench PRIVATE
+    ticker_fast_core
+    ticker_fast_warnings
+    Threads::Threads
+)
