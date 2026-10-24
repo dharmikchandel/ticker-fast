@@ -55,11 +55,20 @@ if(TICKER_FAST_SANITIZER STREQUAL "thread")
     )
 endif()
 
-# Define the core library as an INTERFACE target (header-only for now).
-# It will transition to a compiled library in Phase 5 when shared memory logic is added.
-add_library(ticker_fast_core INTERFACE)
-target_include_directories(ticker_fast_core INTERFACE
+# Define the core library as a STATIC library.
+# Only setup code (shared memory) is compiled here. The ring buffer and protocol stay
+# header-only so the hot path can be inlined into whatever uses it.
+# shm_open/shm_unlink live in libc since glibc 2.34, so no extra 'rt' link is needed.
+add_library(ticker_fast_core STATIC
+    src/shm_segment.cpp
+)
+target_include_directories(ticker_fast_core PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/include
+)
+# PRIVATE: our own source gets the strict warnings (and sanitizer flags) without
+# forcing them on whoever links the library.
+target_link_libraries(ticker_fast_core PRIVATE
+    ticker_fast_warnings
 )
 
 # Download and integrate GoogleTest v1.14.0 via FetchContent at configure time.

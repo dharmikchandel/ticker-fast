@@ -40,3 +40,16 @@ target_link_libraries(test_ring_stress PRIVATE
 
 # Automatically discover individual GoogleTest test cases and register them with CTest
 gtest_discover_tests(test_ring_stress)
+
+# Build the test_shm_segment test executable from test_shm_segment.cpp
+add_executable(test_shm_segment test_shm_segment.cpp)
+
+# Link the core library (now compiled, contains ShmSegment), strict warnings, and GoogleTest
+target_link_libraries(test_shm_segment PRIVATE
+    ticker_fast_core
+    ticker_fast_warnings
+    GTest::gtest_main
+)
+
+# Automatically discover individual GoogleTest test cases and register them with CTest
+gtest_discover_tests(test_shm_segment)
